@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-02T00:00:00Z",
+  "title": "Design System: FaceProof",
+  "extensions": {
+    "colorMeta": {
+      "proof-teal": {
+        "role": "primary",
+        "displayName": "Mineral Proof Teal",
+        "canonical": "oklch(0.45 0.074 200)",
+        "tonalRamp": [
+          "oklch(0.15 0.04 200)",
+          "oklch(0.27 0.06 200)",
+          "oklch(0.39 0.074 200)",
+          "oklch(0.45 0.074 200)",
+          "oklch(0.58 0.065 200)",
+          "oklch(0.72 0.052 200)",
+          "oklch(0.84 0.042 198)",
+          "oklch(0.93 0.028 195)"
+        ]
+      },
+      "mineral-paper": {
+        "role": "neutral",
+        "displayName": "Mineral Paper",
+        "canonical": "oklch(0.982 0.008 190)",
+        "tonalRamp": [
+          "oklch(0.18 0.012 190)",
+          "oklch(0.31 0.012 190)",
+          "oklch(0.46 0.011 190)",
+          "oklch(0.62 0.01 190)",
+          "oklch(0.76 0.009 190)",
+          "oklch(0.87 0.009 190)",
+          "oklch(0.94 0.008 190)",
+          "oklch(0.982 0.008 190)"
+        ]
+      },
+      "warning-rust": {
+        "role": "tertiary",
+        "displayName": "Warning Rust",
+        "canonical": "oklch(0.51 0.11 55)",
+        "tonalRamp": [
+          "oklch(0.16 0.05 55)",
+          "oklch(0.28 0.08 55)",
+          "oklch(0.4 0.1 55)",
+          "oklch(0.51 0.11 55)",
+          "oklch(0.62 0.09 57)",
+          "oklch(0.73 0.07 60)",
+          "oklch(0.84 0.05 63)",
+          "oklch(0.95 0.03 65)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Editorial Claim",
+        "purpose": "One large, tightly tracked product claim."
+      },
+      "body": {
+        "displayName": "Evidence Copy",
+        "purpose": "Readable explanations and recovery guidance."
+      },
+      "label": {
+        "displayName": "Immutable Label",
+        "purpose": "Technical categories, hashes, and status metadata."
+      }
+    },
+    "shadows": [
+      {
+        "name": "toast-raised",
+        "value": "0 16px 44px oklch(0.24 0.03 205 / 0.12)",
+        "purpose": "Temporary feedback above the current task only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "evidence-out",
+        "value": "240ms cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Measured state transitions and result reveal."
+      },
+      {
+        "name": "interaction-fast",
+        "value": "140ms cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Button and rule feedback."
+      }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "375px" },
+      { "name": "mobile", "value": "720px" },
+      { "name": "workbench", "value": "992px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "One decisive local or public action.",
+      "html": "<button class=\"ds-primary\">Start live search <span aria-hidden=\"true\">→</span></button>",
+      "css": ".ds-primary { min-height: 44px; padding: 0 20px; border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--proof-on-fill); background: var(--proof); font: 600 16px var(--font-body); transition: 140ms var(--ease-out); } .ds-primary:hover { background: var(--proof-hover); } .ds-primary:active { transform: translateY(1px); } .ds-primary:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Review, setup, or repeat actions.",
+      "html": "<button class=\"ds-secondary\">Verify again</button>",
+      "css": ".ds-secondary { min-height: 44px; padding: 0 16px; border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); color: var(--ink-strong); background: var(--paper-raised); font: 600 16px var(--font-body); transition: 140ms var(--ease-out); } .ds-secondary:hover { border-color: var(--proof); } .ds-secondary:active { transform: translateY(1px); } .ds-secondary:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }"
+    },
+    {
+      "name": "Verified Status Chip",
+      "kind": "chip",
+      "refersTo": "status-chip",
+      "description": "Text and color confirmation for a completed proof.",
+      "html": "<span class=\"ds-chip\">Publicly verified</span>",
+      "css": ".ds-chip { display: inline-flex; padding: 4px 12px; border: 1px solid var(--proof); border-radius: var(--radius-pill); color: var(--proof-ink); background: var(--proof-soft); font: 500 11px var(--font-mono); }"
+    },
+    {
+      "name": "Evidence Fingerprint",
+      "kind": "custom",
+      "refersTo": "evidence-surface",
+      "description": "A complete technical value with a single proof accent.",
+      "html": "<div class=\"ds-evidence\"><span>Evidence fingerprint</span><code>ab12cd34ef56…90ab12cd</code></div>",
+      "css": ".ds-evidence { padding: 20px; border-left: 3px solid var(--proof); color: var(--ink-strong); background: var(--paper-subtle); font-family: var(--font-body); } .ds-evidence span { display: block; margin-bottom: 8px; color: var(--proof); font: 500 11px var(--font-mono); letter-spacing: .07em; text-transform: uppercase; } .ds-evidence code { overflow-wrap: anywhere; font-family: var(--font-mono); }"
+    },
+    {
+      "name": "Run Stage",
+      "kind": "custom",
+      "description": "One real pipeline stage with explicit result detail.",
+      "html": "<div class=\"ds-stage\"><span>✓</span><div><strong>Verify from Base Sepolia</strong><p>The onchain fingerprint matches the reviewed evidence.</p></div></div>",
+      "css": ".ds-stage { display: grid; grid-template-columns: 28px 1fr; gap: 12px; color: var(--ink); font-family: var(--font-body); } .ds-stage > span { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: var(--white); background: var(--proof); font: 500 11px var(--font-mono); } .ds-stage strong { color: var(--ink-strong); font-size: 14px; } .ds-stage p { margin: 4px 0 0; color: var(--ink-muted); font-size: 12px; line-height: 1.4; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Public Evidence Desk",
+    "overview": "FaceProof feels like a careful review desk built for a judge who has only a few minutes. Large editorial type establishes the claim, while thin rules, quiet paper tones, and a persistent run record expose the supporting work. The system rejects crypto spectacle and artificial certainty.",
+    "keyCharacteristics": [
+      "Mineral paper instead of pure white or dark dashboard chrome.",
+      "One teal proof signal used for active, matched, and verified states.",
+      "Editorial display type paired with neutral body copy and mono evidence labels.",
+      "Real stage detail instead of decorative progress.",
+      "Thin rules and tonal surfaces instead of stacked card decoration."
+    ],
+    "rules": [
+      {
+        "name": "The One Proof Signal Rule",
+        "body": "Teal means that work is active, selected, matched, or verified. It is not a general decorative accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Public Write Rule",
+        "body": "The irreversible blockchain approval uses rust until confirmation. It must not look identical to an ordinary local action.",
+        "section": "colors"
+      },
+      {
+        "name": "The Claim and Evidence Rule",
+        "body": "Display type makes the claim once. Everything after it uses restrained title, body, and mono roles so evidence stays primary.",
+        "section": "typography"
+      },
+      {
+        "name": "The Desk Surface Rule",
+        "body": "Evidence panels sit on the page like organized documents. Do not make every section float.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the source, score, threshold, and evidence fingerprint close to the selected result.",
+      "Do preserve useful partial results when a later stage fails.",
+      "Do use the exact six stage titles in the workbench and recording."
+    ],
+    "donts": [
+      "Don't make the product resemble a cryptocurrency trading screen.",
+      "Don't use a neon cyber security dashboard.",
+      "Don't create a generic grid of statistic cards.",
+      "Don't turn a similarity score into a confidence percentage or identity claim."
+    ]
+  }
+}

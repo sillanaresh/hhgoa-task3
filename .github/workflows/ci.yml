@@ -1,0 +1,35 @@
+name: quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: "0.8.17"
+          enable-cache: true
+      - name: Install Python and locked dependencies
+        run: uv sync --locked --extra dev
+      - name: Check formatting and lint
+        run: uv run ruff format --check src tests scripts/secret_scan.py scripts/package_check.py && uv run ruff check src tests scripts/secret_scan.py scripts/package_check.py
+      - name: Check types
+        run: uv run mypy src
+      - name: Run tests
+        run: uv run pytest --cov=faceproof --cov-report=term-missing
+      - name: Scan source for common security issues
+        run: uv run bandit -q -r src
+      - name: Audit Python dependencies
+        run: uv run pip-audit
+      - name: Scan repository for common secret shapes
+        run: uv run python scripts/secret_scan.py
+      - name: Build and inspect release package
+        run: uv build --wheel --out-dir .context/check-dist && uv run python scripts/package_check.py .context/check-dist
