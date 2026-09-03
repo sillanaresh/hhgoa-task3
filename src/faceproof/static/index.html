@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Find a public social post from a face scan and verify its evidence fingerprint on Base Sepolia.">
+    <title>FaceProof · Face search with public verification</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,500..700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/tokens.css">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to the workbench</a>
+    <nav class="site-nav" aria-label="Primary">
+      <a class="brand" href="/" aria-label="FaceProof home">
+        <span class="brand-mark" aria-hidden="true"><span></span></span>
+        <span>FaceProof</span>
+      </a>
+      <div class="nav-meta">
+        <span class="network-dot" aria-hidden="true"></span>
+        <span>Base Sepolia</span>
+        <span class="version">v0.1</span>
+      </div>
+    </nav>
+
+    <main id="main">
+      <header class="intro">
+        <div>
+          <p class="context-line">Live visual search · local face comparison · public proof</p>
+          <h1>Find a face.<br>Verify the evidence.</h1>
+        </div>
+        <p class="lede">
+          FaceProof finds public social content from an image, confirms the face locally,
+          then anchors only the evidence fingerprint to a public test network.
+        </p>
+      </header>
+
+      <section class="readiness" id="readiness" aria-labelledby="readinessTitle">
+        <div class="readiness-heading">
+          <div>
+            <h2 id="readinessTitle">System readiness</h2>
+            <p id="readinessSummary" aria-live="polite">Checking local and public services…</p>
+          </div>
+          <button class="text-button" id="refreshHealth" type="button">Check again</button>
+        </div>
+        <div class="readiness-checks" id="readinessChecks"></div>
+        <div class="setup-action" id="walletSetup" hidden>
+          <p>A disposable test wallet is needed. It stays in the ignored <code>.context</code> folder.</p>
+          <button class="secondary-button" id="createWallet" type="button">Create test wallet</button>
+        </div>
+      </section>
+
+      <section class="workbench" aria-label="FaceProof workbench">
+        <div class="work-area">
+          <section class="input-section" id="inputSection" aria-labelledby="inputTitle">
+            <div class="section-heading">
+              <div>
+                <h2 id="inputTitle">Provide the face scan</h2>
+                <p>Use one clear image. If several faces appear, the largest is selected.</p>
+              </div>
+            </div>
+
+            <form id="scanForm">
+              <label class="dropzone" id="dropzone" for="faceImage">
+                <input id="faceImage" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+                <span class="drop-icon" aria-hidden="true">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="drop-copy">
+                  <strong id="dropTitle">Choose an image or drop it here</strong>
+                  <span>JPEG, PNG, or WebP · up to 10 MB</span>
+                </span>
+                <span class="file-action">Browse</span>
+                <img id="localPreview" alt="Selected image preview" hidden>
+              </label>
+
+              <label class="consent-row">
+                <input id="consent" name="consent" type="checkbox" value="true" required>
+                <span>
+                  I confirm this image is mine to use or depicts a public figure, and I understand
+                  it will be sent to a visual search provider.
+                </span>
+              </label>
+
+              <div class="form-actions">
+                <button class="primary-button" id="startButton" type="submit">
+                  Start live search
+                  <svg aria-hidden="true" viewBox="0 0 20 20" width="18" height="18"><path d="M4 10h11m-4-4 4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+                <p class="privacy-note">Face embeddings remain in memory and are never written to the blockchain.</p>
+              </div>
+            </form>
+          </section>
+
+          <section class="result-section" id="resultSection" aria-labelledby="resultTitle" hidden>
+            <div class="section-heading result-heading">
+              <div>
+                <h2 id="resultTitle">Inspect the match</h2>
+                <p>Review the source and model score before creating a public record.</p>
+              </div>
+              <span class="status-chip" id="matchStatus">Reviewing</span>
+            </div>
+
+            <div class="comparison" id="comparison" hidden>
+              <figure>
+                <div class="image-frame"><img id="inputAnnotated" alt="Input image with detected face outlined"></div>
+                <figcaption><span>Input</span><strong>Selected face</strong></figcaption>
+              </figure>
+              <div class="comparison-link" aria-hidden="true"><span></span><i></i><span></span></div>
+              <figure>
+                <div class="image-frame"><img id="matchImage" alt="Image retrieved from the matching public post"></div>
+                <figcaption><span>Live result</span><strong id="matchSource">Public social post</strong></figcaption>
+              </figure>
+            </div>
+
+            <div class="match-finding" id="matchFinding" hidden>
+              <div class="finding-copy">
+                <p class="finding-label">Selected result</p>
+                <h3 id="matchTitle"></h3>
+                <a id="matchLink" class="source-link" href="#" target="_blank" rel="noopener noreferrer">
+                  Open original post
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+              <div class="score-block">
+                <div class="score-line">
+                  <span>Cosine similarity</span>
+                  <strong id="similarityValue">0.000</strong>
+                </div>
+                <div class="score-track" aria-hidden="true"><span id="scoreFill"></span><i id="thresholdMark"></i></div>
+                <p id="thresholdText">Decision threshold: 0.450</p>
+              </div>
+            </div>
+
+            <details class="candidate-disclosure" id="candidateDisclosure" hidden>
+              <summary><span id="candidateSummary">View evaluated search candidates</span><span aria-hidden="true">+</span></summary>
+              <div class="candidate-list" id="candidateList"></div>
+            </details>
+
+            <div class="evidence-record" id="evidenceRecord" hidden>
+              <div>
+                <p class="finding-label">Evidence fingerprint</p>
+                <code id="evidenceHash"></code>
+              </div>
+              <div class="record-actions">
+                <button class="icon-button" id="copyHash" type="button">Copy hash</button>
+                <a class="icon-button" id="downloadEvidence" href="#" download>Download JSON</a>
+              </div>
+            </div>
+
+            <section class="approval" id="approval" aria-labelledby="approvalTitle" hidden>
+              <div class="approval-icon" aria-hidden="true">
+                <svg aria-hidden="true" viewBox="0 0 24 24" width="24" height="24"><path d="M12 3.5 4.5 7v5c0 4.6 3.1 7.5 7.5 9 4.4-1.5 7.5-4.4 7.5-9V7L12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m8.8 12 2.1 2.1 4.4-4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div>
+                <h3 id="approvalTitle">Ready to create a public proof</h3>
+                <p>This sends one irreversible Base Sepolia transaction containing the schema marker and 32-byte fingerprint. It sends no money and includes no face image, embedding, or API key.</p>
+              </div>
+              <div class="approval-actions">
+                <button class="secondary-button" id="rejectButton" type="button">Reject match</button>
+                <button class="primary-button" id="publishButton" type="button">Publish fingerprint</button>
+              </div>
+            </section>
+
+            <section class="rejected-record" id="rejectedRecord" aria-labelledby="rejectedTitle" hidden>
+              <div class="rejected-mark" aria-hidden="true">×</div>
+              <div>
+                <p class="finding-label">Not published</p>
+                <h3 id="rejectedTitle">Proposed match rejected</h3>
+                <p>No blockchain transaction was created. The saved run remains available for review.</p>
+              </div>
+              <button class="secondary-button" id="rejectedRetry" type="button">Start a new run</button>
+            </section>
+
+            <section class="verified-record" id="verifiedRecord" aria-labelledby="verifiedTitle" hidden>
+              <div class="verified-mark" aria-hidden="true">✓</div>
+              <div class="verified-copy">
+                <p class="finding-label">Onchain record</p>
+                <h3 id="verifiedTitle">Evidence verified</h3>
+                <p>The fingerprint recomputed from the local JSON matches the confirmed transaction payload.</p>
+              </div>
+              <dl class="receipt-grid">
+                <div><dt>Network</dt><dd id="receiptNetwork"></dd></div>
+                <div><dt>Block</dt><dd id="receiptBlock"></dd></div>
+                <div><dt>Transaction</dt><dd><code id="receiptTransaction"></code></dd></div>
+                <div><dt>Confirmations</dt><dd id="receiptConfirmations"></dd></div>
+              </dl>
+              <div class="verified-actions">
+                <a class="primary-button" id="explorerLink" href="#" target="_blank" rel="noopener noreferrer">View public transaction <span aria-hidden="true">↗</span></a>
+                <button class="secondary-button" id="verifyButton" type="button">Verify again</button>
+              </div>
+            </section>
+
+            <section class="error-record" id="errorRecord" role="alert" hidden>
+              <p class="finding-label">Run stopped</p>
+              <h3 id="errorTitle"></h3>
+              <p id="errorRecovery"></p>
+              <button class="secondary-button" id="retryButton" type="button">Start a new run</button>
+            </section>
+          </section>
+        </div>
+
+        <aside class="run-rail" aria-labelledby="runTitle">
+          <div class="rail-heading">
+            <div>
+              <h2 id="runTitle">Run record</h2>
+              <p id="runIdentifier">No run started</p>
+            </div>
+            <button class="text-button" id="cancelButton" type="button" hidden>Cancel</button>
+          </div>
+          <ol class="stage-list" id="stageList">
+            <li data-stage="pending"><span class="stage-marker">1</span><div><strong>Detect and encode face</strong><p>Waiting for an input image.</p></div></li>
+            <li data-stage="pending"><span class="stage-marker">2</span><div><strong>Search the public web</strong><p>A fresh visual search will run.</p></div></li>
+            <li data-stage="pending"><span class="stage-marker">3</span><div><strong>Compare candidate faces</strong><p>Every result is checked locally.</p></div></li>
+            <li data-stage="pending"><span class="stage-marker">4</span><div><strong>Prepare evidence fingerprint</strong><p>Canonical JSON makes the hash repeatable.</p></div></li>
+            <li data-stage="pending"><span class="stage-marker">5</span><div><strong>Publish public proof</strong><p>Waits for your explicit approval.</p></div></li>
+            <li data-stage="pending"><span class="stage-marker">6</span><div><strong>Verify from Base Sepolia</strong><p>Reads and checks the transaction again.</p></div></li>
+          </ol>
+          <div class="rail-status" aria-live="polite">
+            <span id="runPulse" aria-hidden="true"></span>
+            <p id="runMessage">Choose an image to begin.</p>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <footer>
+      <p>FaceProof · HH Goa 2026 Task 3</p>
+      <p>Public evidence, minimal disclosure.</p>
+      <a href="/api/docs">API docs</a>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>
