@@ -34,6 +34,8 @@ flowchart LR
 
 The first four stages prepare evidence. Publication is a separate approval step. Only the schema marker and the 32 byte fingerprint are public. Images, face embeddings, the wallet key, and the search key remain offchain.
 
+See [the validated public run](docs/VALIDATED_RUN.md) for the search records, selected social post, evidence fingerprint, Base Sepolia transaction, and repeat verification from September 3, 2026.
+
 FaceProof uses a conservative `0.45` application threshold for ordinary visual results. An item returned by Google Lens in its exact-match section may use the `0.363` cosine reference published in the [official OpenCV Zoo implementation](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/sface.py). Both values are configurable model boundaries, not identity probabilities. Every passing result still requires human approval or rejection before publication.
 
 YuNet uses a `0.80` face detection cutoff so clear portraits with glasses or varied lighting are not discarded before comparison. This only decides whether a face is present. It does not lower the separate identity comparison threshold.
