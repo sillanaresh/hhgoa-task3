@@ -6,6 +6,14 @@ It is the complete submission project for HH Goa 2026 Shortlisting Task 3.
 
 > FaceProof shows that a face in two images is similar enough under a stated model and threshold. It does not prove a person's legal identity.
 
+## Why this project exists
+
+A face search can find a public post, but a search result can change or disappear later. FaceProof creates a precise evidence record at the time of review. It then stores the SHA-256 fingerprint of that record in a public Base Sepolia transaction.
+
+Anyone can later calculate the fingerprint again and compare it with the transaction. A match proves that the checked evidence has not changed since publication. A mismatch shows that at least one covered value changed.
+
+The blockchain does not decide whether the person is who they claim to be. It also does not prove that a social post is true. FaceProof uses it only as a public record of the exact evidence that a reviewer approved.
+
 ## What the judges can verify
 
 | Task requirement | FaceProof implementation | Visible proof |
@@ -33,6 +41,25 @@ flowchart LR
 ```
 
 The first four stages prepare evidence. Publication is a separate approval step. Only the schema marker and the 32 byte fingerprint are public. Images, face embeddings, the wallet key, and the search key remain offchain.
+
+## What happens during one run
+
+1. The reviewer selects an image and confirms that they have permission to use it for public visual search.
+2. FaceProof decodes the upload, removes metadata, normalizes the image, and deletes the raw upload after decoding.
+3. YuNet detects the largest face. SFace aligns that face and creates a 128 value mathematical representation in memory.
+4. FaceProof sends the face crop and the normalized full image to two new Google Lens searches through SerpApi. Provider caching is disabled.
+5. FaceProof keeps public social results, downloads permitted candidate images with strict safety limits, and compares each detected face locally.
+6. The interface shows the best passing candidate, its source, the exact comparison score, the required threshold, and the other evaluated candidates.
+7. The reviewer can approve or reject the result. A rejected result cannot be published.
+8. After approval, FaceProof creates canonical evidence JSON and calculates its SHA-256 fingerprint.
+9. The wallet sends a zero value Base Sepolia transaction to itself. The transaction contains the FaceProof version marker and the evidence fingerprint.
+10. FaceProof waits for confirmation, reads the public transaction, calculates the local fingerprint again, and checks that both values are identical.
+
+## Validated public result
+
+The project completed a live run on September 3, 2026 with a licensed portrait of Sundar Pichai. A new Google Lens search found a matching [Stanford social post](https://www.facebook.com/Stanford/posts/sundar-pichai-ceo-of-google-and-alphabet-inc-and-a-stanford-alum-will-return-to-/1363544992482875/). SFace gave the selected candidate a cosine similarity score of `0.954334`, above the required `0.45` threshold.
+
+The approved evidence produced fingerprint `c759628e8dd16e3f5bb397e52f0db4746739dcb8694dccd05de401a753053a0e`. FaceProof published it in [Base Sepolia transaction 0x7053...6975](https://sepolia.basescan.org/tx/0x7053f316d2955ce978245318450dcf2b94c30702a71bd7d7c966eb687a1d6975) at block `46336968`, then read the transaction and verified the evidence again.
 
 See [the validated public run](docs/VALIDATED_RUN.md) for the search records, selected social post, evidence fingerprint, Base Sepolia transaction, and repeat verification from September 3, 2026.
 
@@ -111,7 +138,7 @@ For the final recording, run the strict readiness and repository gate together:
 ./scripts/preflight.sh
 ```
 
-### 4. Start the workbench
+### 5. Start the workbench
 
 ```bash
 ./scripts/demo.sh
@@ -193,6 +220,19 @@ See [docs/EVIDENCE_SCHEMA.md](docs/EVIDENCE_SCHEMA.md) for the field level contr
 The check runs formatting, lint, strict type checking, unit and integration tests with coverage, a Bandit source scan, a dependency vulnerability audit, a scan for common secret shapes, and a release package asset check. CI runs the same checks on every pull request.
 
 The test suite covers canonical fingerprints, tamper detection, social URL filtering, fresh search parameters, model file integrity, image limits, wallet permissions, the complete pipeline with deterministic service doubles, blockchain payload verification, and API security headers.
+
+## Secrets and local data
+
+The public repository contains no live API key, wallet private key, input photograph, or private run data. FaceProof keeps all of those files under `.context/`, and Git ignores that entire directory.
+
+- `.env.example` contains placeholders only.
+- `.context/secrets.env` contains the local SerpApi key.
+- `.context/base-sepolia-wallet.json` contains the disposable wallet private key and uses owner only file permissions.
+- `.context/input/` and `.context/runs/` contain local images and evidence files.
+- `scripts/secret_scan.py` checks tracked project files for common secret formats.
+- `scripts/preflight.sh` runs the secret scan before a recording or release.
+
+The wallet address, evidence fingerprint, transaction hash, and block number are public verification values. They cannot be used to spend from the wallet. Never commit or display the corresponding private key.
 
 ## Privacy and responsible use
 
