@@ -5,7 +5,7 @@ const state = {
   record: null,
   health: null,
   polling: false,
-  previewUrl: null,
+  previewReadId: 0,
   toastTimer: null,
 };
 
@@ -166,8 +166,8 @@ async function loadHealth({ quiet = false } = {}) {
 }
 
 function updatePreview(file) {
-  if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
-  state.previewUrl = null;
+  const readId = state.previewReadId + 1;
+  state.previewReadId = readId;
   ui.localPreview.hidden = true;
   ui.localPreview.removeAttribute("src");
   if (!file) {
@@ -185,10 +185,20 @@ function updatePreview(file) {
     showToast("Choose an image smaller than 10 MB.");
     return;
   }
-  state.previewUrl = URL.createObjectURL(file);
-  ui.localPreview.src = state.previewUrl;
-  ui.localPreview.hidden = false;
   ui.dropTitle.textContent = file.name;
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    if (state.previewReadId !== readId || typeof reader.result !== "string") return;
+    ui.localPreview.src = reader.result;
+    ui.localPreview.hidden = false;
+  });
+  reader.addEventListener("error", () => {
+    if (state.previewReadId !== readId) return;
+    ui.faceImage.value = "";
+    ui.dropTitle.textContent = "Choose an image or drop it here";
+    showToast("The selected image preview could not be loaded. Choose the file again.");
+  });
+  reader.readAsDataURL(file);
 }
 
 function resetRun() {
@@ -508,9 +518,5 @@ ui.createWallet.addEventListener("click", async () => {
 ui.refreshHealth.addEventListener("click", () => loadHealth());
 ui.retryButton.addEventListener("click", resetRun);
 ui.rejectedRetry.addEventListener("click", resetRun);
-
-window.addEventListener("beforeunload", () => {
-  if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);
-});
 
 loadHealth();
