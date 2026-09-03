@@ -14,7 +14,7 @@ Face comparison is probabilistic. A passing score is not proof of a legal name, 
 
 - The input image is uploaded to SerpApi for Google Lens processing after the user confirms permission.
 - The local SFace embedding stays in process memory and is not saved.
-- Local images and run files are stored under `.context/runs`, ignored by Git, and restricted to owner only directory access.
+- Normalized local images and run files are stored under `.context/runs`, ignored by Git, and restricted to owner only directory access. The original upload is deleted after decoding so its EXIF metadata is not retained in the run.
 - The SerpApi key is loaded from `.context/secrets.env`, which setup restricts to owner only access, and is not returned by the API.
 - The Base Sepolia private key is stored in `.context/base-sepolia-wallet.json` with mode `0600`.
 - Only the evidence schema marker and SHA-256 fingerprint are written to the public blockchain.

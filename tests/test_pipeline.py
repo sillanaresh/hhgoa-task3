@@ -142,7 +142,9 @@ async def test_pipeline_prepares_publishes_and_reverifies(
     assert len(prepared.candidates) == 2
     assert prepared.selected_match is not None
     assert prepared.selected_match.post_url.endswith("/face_crop/")
+    assert prepared.selected_match.threshold == 0.363
     assert prepared.evidence is not None
+    assert not upload.exists()
     evidence_file = Path(settings.runs_dir / record.run_id / "evidence.json")
     assert await asyncio.to_thread(evidence_file.is_file)
 
@@ -189,5 +191,6 @@ async def test_pipeline_preserves_a_clear_no_match_failure(settings, monkeypatch
     assert failed.status == RunStatus.FAILED
     assert failed.error is not None
     assert failed.error.code == "no_match"
+    assert not upload.exists()
     assert failed.current_step == "search"
     assert next(step for step in failed.steps if step.key == "search").status.value == "failed"

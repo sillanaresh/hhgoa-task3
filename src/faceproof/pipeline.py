@@ -86,6 +86,8 @@ class Pipeline:
                 ),
                 internal=exc,
             )
+        finally:
+            await asyncio.to_thread(uploaded_path.unlink, missing_ok=True)
 
     async def publish_and_verify(self, run_id: str) -> RunRecord:
         async with self._publication_lock:

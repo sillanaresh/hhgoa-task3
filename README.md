@@ -34,6 +34,8 @@ flowchart LR
 
 The first four stages prepare evidence. Publication is a separate approval step. Only the schema marker and the 32 byte fingerprint are public. Images, face embeddings, the wallet key, and the search key remain offchain.
 
+The default SFace cosine threshold is `0.363`, taken from the [official OpenCV Zoo implementation](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/sface.py). It is a configurable model boundary, not an identity probability.
+
 ## Cost and accounts
 
 The project can run without spending real money.

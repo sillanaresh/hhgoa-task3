@@ -65,7 +65,7 @@ States are `created`, `running`, `awaiting_publish`, `publishing`, `verified`, `
 
 YuNet locates faces and five facial landmarks. SFace aligns the selected face and returns a 128 value feature vector. The vector is normalized in memory. Candidate comparison uses the dot product of normalized vectors, which is cosine similarity.
 
-The default decision threshold is `0.45`. It is a configurable engineering threshold, not a probability and not a measure of legal identity. The largest face is selected when several faces appear. The run warns about that choice.
+The default decision threshold is `0.363`, matching the cosine threshold published in the [official OpenCV Zoo SFace implementation](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/sface.py). It is a model decision boundary, not a probability and not a measure of legal identity. The largest face is selected when several faces appear. The run warns about that choice.
 
 Model files come from the official OpenCV Zoo. Their URLs and SHA-256 values are pinned in source. A missing or changed download cannot be used silently.
 
