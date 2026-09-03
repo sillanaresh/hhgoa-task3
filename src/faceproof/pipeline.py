@@ -378,7 +378,12 @@ class Pipeline:
                     candidate.image_url = self._artifact_url(record.run_id, filename)
                     candidate.image_sha256 = sha256_bytes(normalized)
                     candidate.similarity = round(similarity, 6)
-                    candidate.passes_threshold = similarity >= self.settings.face_match_threshold
+                    candidate_threshold = (
+                        self.settings.face_exact_match_threshold
+                        if candidate.exact_match
+                        else self.settings.face_match_threshold
+                    )
+                    candidate.passes_threshold = similarity >= candidate_threshold
                     candidate.evaluation_error = None
             except FaceProofError as exc:
                 candidate.evaluation_error = exc.message
@@ -414,6 +419,11 @@ class Pipeline:
             reverse=True,
         )
         selected = passing[0]
+        selected_threshold = (
+            self.settings.face_exact_match_threshold
+            if selected.exact_match
+            else self.settings.face_match_threshold
+        )
         record.candidates = sorted(
             evaluated,
             key=lambda candidate: (
@@ -430,7 +440,7 @@ class Pipeline:
             local_image_url=selected.image_url or "",
             image_sha256=selected.image_sha256 or "",
             similarity=selected.similarity or 0.0,
-            threshold=self.settings.face_match_threshold,
+            threshold=selected_threshold,
             exact_match=selected.exact_match,
             query_kind=selected.query_kind,
         )

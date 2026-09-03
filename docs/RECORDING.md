@@ -5,7 +5,7 @@ Aim for a clear recording of three to five minutes. Record one continuous take. 
 ## Before recording
 
 1. Make the GitHub repository public only after the final secret check.
-2. Choose a clear image of a public figure that you have tested once.
+2. Run `./scripts/demo-input.sh` to prepare the licensed public figure image.
 3. Confirm that the related social post is still public.
 4. Keep enough SerpApi searches for at least two runs. Each normal run uses two searches.
 5. Keep a small Base Sepolia test ETH balance in the disposable wallet.
@@ -39,7 +39,7 @@ Show the readiness strip. Say that the image will be sent to the live visual sea
 
 ### 3. Run the live search
 
-1. Choose the prepared face image.
+1. Choose `.context/input/sundar-pichai-cc-by-4.jpg`.
 2. Confirm the permission statement.
 3. Select `Start live search`.
 4. Keep the stage rail visible while it advances.

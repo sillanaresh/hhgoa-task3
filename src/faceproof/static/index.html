@@ -132,7 +132,7 @@
                   <strong id="similarityValue">0.000</strong>
                 </div>
                 <div class="score-track" aria-hidden="true"><span id="scoreFill"></span><i id="thresholdMark"></i></div>
-                <p id="thresholdText">Decision threshold: 0.363</p>
+                <p id="thresholdText">Decision threshold: 0.450</p>
               </div>
             </div>
 
@@ -160,7 +160,20 @@
                 <h3 id="approvalTitle">Ready to create a public proof</h3>
                 <p>This sends one irreversible Base Sepolia transaction containing the schema marker and 32-byte fingerprint. It sends no money and includes no face image, embedding, or API key.</p>
               </div>
-              <button class="primary-button" id="publishButton" type="button">Publish fingerprint</button>
+              <div class="approval-actions">
+                <button class="secondary-button" id="rejectButton" type="button">Reject match</button>
+                <button class="primary-button" id="publishButton" type="button">Publish fingerprint</button>
+              </div>
+            </section>
+
+            <section class="rejected-record" id="rejectedRecord" aria-labelledby="rejectedTitle" hidden>
+              <div class="rejected-mark" aria-hidden="true">×</div>
+              <div>
+                <p class="finding-label">Not published</p>
+                <h3 id="rejectedTitle">Proposed match rejected</h3>
+                <p>No blockchain transaction was created. The saved run remains available for review.</p>
+              </div>
+              <button class="secondary-button" id="rejectedRetry" type="button">Start a new run</button>
             </section>
 
             <section class="verified-record" id="verifiedRecord" aria-labelledby="verifiedTitle" hidden>

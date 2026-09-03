@@ -34,7 +34,9 @@ flowchart LR
 
 The first four stages prepare evidence. Publication is a separate approval step. Only the schema marker and the 32 byte fingerprint are public. Images, face embeddings, the wallet key, and the search key remain offchain.
 
-The default SFace cosine threshold is `0.363`, taken from the [official OpenCV Zoo implementation](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/sface.py). It is a configurable model boundary, not an identity probability.
+FaceProof uses a conservative `0.45` application threshold for ordinary visual results. An item returned by Google Lens in its exact-match section may use the `0.363` cosine reference published in the [official OpenCV Zoo implementation](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/sface.py). Both values are configurable model boundaries, not identity probabilities. Every passing result still requires human approval or rejection before publication.
+
+YuNet uses a `0.80` face detection cutoff so clear portraits with glasses or varied lighting are not discarded before comparison. This only decides whether a face is present. It does not lower the separate identity comparison threshold.
 
 ## Cost and accounts
 
@@ -92,6 +94,14 @@ uv run faceproof doctor
 ```
 
 All five checks should say `Ready` or `Reachable` before recording the demo.
+
+### 4. Prepare the licensed demo image
+
+```bash
+./scripts/demo-input.sh
+```
+
+This downloads a pinned portrait of Sundar Pichai from Wikimedia Commons into the Git-ignored `.context/input` directory and verifies its SHA-256 value. The photograph is by Lukasz Kobus for the European Commission and is available under [CC BY 4.0](https://commons.wikimedia.org/wiki/File:Sundar_Pichai_(2023)_cropped.jpg). The portrait is only the input. FaceProof does not contain or preselect the social result returned by the live search.
 
 For the final recording, run the strict readiness and repository gate together:
 

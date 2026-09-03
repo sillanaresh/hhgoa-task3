@@ -72,7 +72,7 @@ class FakeSearchClient:
             source="Instagram",
             post_url=f"https://www.instagram.com/p/{query_kind}/",
             media_url=f"https://cdn.example.test/{query_kind}.jpg",
-            exact_match=query_kind == "face_crop",
+            exact_match=False,
             query_kind=query_kind,
         )
         return LensSearchResult(
@@ -85,6 +85,19 @@ class FakeSearchClient:
             ),
             candidates=(candidate,),
         )
+
+
+class WeakFaceEngine(FakeFaceEngine):
+    @staticmethod
+    def best_similarity(_: np.ndarray, __: FaceAnalysis) -> float:
+        return 0.395327
+
+
+class ExactSearchClient(FakeSearchClient):
+    async def search(self, image: bytes, *, query_kind: str) -> LensSearchResult:
+        result = await super().search(image, query_kind=query_kind)
+        exact = result.candidates[0].model_copy(update={"exact_match": True})
+        return LensSearchResult(trace=result.trace, candidates=(exact,))
 
 
 class FakeChain:
@@ -142,7 +155,7 @@ async def test_pipeline_prepares_publishes_and_reverifies(
     assert len(prepared.candidates) == 2
     assert prepared.selected_match is not None
     assert prepared.selected_match.post_url.endswith("/face_crop/")
-    assert prepared.selected_match.threshold == 0.363
+    assert prepared.selected_match.threshold == 0.45
     assert prepared.evidence is not None
     assert not upload.exists()
     evidence_file = Path(settings.runs_dir / record.run_id / "evidence.json")
@@ -167,6 +180,58 @@ async def test_pipeline_prepares_publishes_and_reverifies(
     assert failed.status == RunStatus.FAILED
     assert failed.blockchain is not None
     assert failed.blockchain.verification_passed is False
+
+
+@pytest.mark.asyncio
+async def test_pipeline_rejects_a_weak_non_exact_lookalike(settings, monkeypatch) -> None:
+    monkeypatch.setattr("faceproof.pipeline.FaceEngine", WeakFaceEngine)
+    monkeypatch.setattr("faceproof.pipeline.SerpApiLensClient", FakeSearchClient)
+
+    async def fake_download(_: str, *, maximum_bytes: int) -> tuple[bytes, str]:
+        del maximum_bytes
+        return _jpeg(), "image/jpeg"
+
+    monkeypatch.setattr("faceproof.pipeline.download_image", fake_download)
+    store = RunStore(settings.runs_dir)
+    record = store.create("face.jpg")
+    upload = store.artifact_path(record.run_id, "upload.bin")
+    upload.write_bytes(_jpeg())
+
+    failed = await Pipeline(settings, store).prepare(record.run_id, upload)
+
+    assert failed.status == RunStatus.FAILED
+    assert failed.error is not None
+    assert failed.error.code == "no_match"
+    assert all(not candidate.passes_threshold for candidate in failed.candidates)
+    assert failed.evidence is None
+    assert not upload.exists()
+
+
+@pytest.mark.asyncio
+async def test_pipeline_accepts_an_exact_visual_match_above_model_reference(
+    settings,
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr("faceproof.pipeline.FaceEngine", WeakFaceEngine)
+    monkeypatch.setattr("faceproof.pipeline.SerpApiLensClient", ExactSearchClient)
+
+    async def fake_download(_: str, *, maximum_bytes: int) -> tuple[bytes, str]:
+        del maximum_bytes
+        return _jpeg(), "image/jpeg"
+
+    monkeypatch.setattr("faceproof.pipeline.download_image", fake_download)
+    store = RunStore(settings.runs_dir)
+    record = store.create("face.jpg")
+    upload = store.artifact_path(record.run_id, "upload.bin")
+    upload.write_bytes(_jpeg())
+
+    prepared = await Pipeline(settings, store).prepare(record.run_id, upload)
+
+    assert prepared.status == RunStatus.AWAITING_PUBLISH
+    assert prepared.selected_match is not None
+    assert prepared.selected_match.exact_match is True
+    assert prepared.selected_match.threshold == 0.363
+    assert prepared.selected_match.similarity == 0.395327
 
 
 @pytest.mark.asyncio

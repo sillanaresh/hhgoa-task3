@@ -36,8 +36,9 @@ class Settings(BaseSettings):
     base_rpc_url: str = "https://sepolia.base.org"
     base_chain_id: int = 84532
     base_explorer_url: str = "https://sepolia.basescan.org"
-    face_match_threshold: float = Field(default=0.363, ge=-1.0, le=1.0)
-    detector_score_threshold: float = Field(default=0.88, ge=0.0, le=1.0)
+    face_match_threshold: float = Field(default=0.45, ge=-1.0, le=1.0)
+    face_exact_match_threshold: float = Field(default=0.363, ge=-1.0, le=1.0)
+    detector_score_threshold: float = Field(default=0.80, ge=0.0, le=1.0)
     max_upload_bytes: int = 10 * 1024 * 1024
     max_remote_image_bytes: int = 12 * 1024 * 1024
     max_candidates: int = Field(default=16, ge=1, le=50)

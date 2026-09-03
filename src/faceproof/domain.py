@@ -18,6 +18,7 @@ class RunStatus(StrEnum):
     AWAITING_PUBLISH = "awaiting_publish"
     PUBLISHING = "publishing"
     VERIFIED = "verified"
+    REJECTED = "rejected"
     FAILED = "failed"
     CANCELED = "canceled"
 

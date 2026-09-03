@@ -805,6 +805,7 @@ code {
 .finding-copy h3,
 .approval h3,
 .verified-record h3,
+.rejected-record h3,
 .error-record h3 {
   margin-bottom: var(--space-3);
   font-size: 1.25rem;
@@ -1013,7 +1014,13 @@ code {
   font-size: 0.8rem;
 }
 
+.approval-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
 .verified-record,
+.rejected-record,
 .error-record {
   margin-top: var(--space-6);
   padding: var(--space-6);
@@ -1026,6 +1033,36 @@ code {
   gap: var(--space-4);
   border: var(--rule-width) solid var(--proof);
   background: var(--proof-soft);
+}
+
+.rejected-record {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  align-items: center;
+  border: var(--rule-width) solid var(--rule-strong);
+  background: var(--paper-subtle);
+}
+
+.rejected-mark {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border: var(--rule-width) solid var(--ink-muted);
+  border-radius: 50%;
+  color: var(--ink-muted);
+  font-size: 1.35rem;
+}
+
+.rejected-record h3,
+.rejected-record p {
+  margin-bottom: 0;
+}
+
+.rejected-record p:not(.finding-label) {
+  color: var(--ink-muted);
+  font-size: 0.84rem;
 }
 
 .verified-mark {
@@ -1277,7 +1314,9 @@ footer a:active,
 
   .record-actions,
   .record-actions .icon-button,
-  .approval .primary-button,
+  .approval-actions,
+  .approval-actions > *,
+  .rejected-record .secondary-button,
   .verified-actions > * {
     width: 100%;
   }
@@ -1286,7 +1325,16 @@ footer a:active,
     grid-template-columns: auto 1fr;
   }
 
-  .approval .primary-button {
+  .approval-actions {
+    grid-column: 1 / -1;
+    flex-direction: column-reverse;
+  }
+
+  .rejected-record {
+    grid-template-columns: auto 1fr;
+  }
+
+  .rejected-record .secondary-button {
     grid-column: 1 / -1;
   }
 

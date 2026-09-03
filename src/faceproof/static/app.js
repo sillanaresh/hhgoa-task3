@@ -46,6 +46,9 @@ const ui = Object.fromEntries(
     "downloadEvidence",
     "approval",
     "publishButton",
+    "rejectButton",
+    "rejectedRecord",
+    "rejectedRetry",
     "verifiedRecord",
     "receiptNetwork",
     "receiptBlock",
@@ -66,7 +69,7 @@ const ui = Object.fromEntries(
   ].map((id) => [id, document.getElementById(id)]),
 );
 
-const terminalStatuses = new Set(["awaiting_publish", "verified", "failed", "canceled"]);
+const terminalStatuses = new Set(["awaiting_publish", "verified", "rejected", "failed", "canceled"]);
 const stageSymbols = {
   complete: "✓",
   failed: "!",
@@ -201,6 +204,7 @@ function resetRun() {
   ui.candidateDisclosure.hidden = true;
   ui.evidenceRecord.hidden = true;
   ui.approval.hidden = true;
+  ui.rejectedRecord.hidden = true;
   ui.verifiedRecord.hidden = true;
   ui.errorRecord.hidden = true;
   ui.cancelButton.hidden = true;
@@ -330,7 +334,14 @@ function renderRecord(record) {
   if (record.evidence) renderEvidence(record);
   ui.approval.hidden = record.status !== "awaiting_publish";
   ui.publishButton.disabled = record.status !== "awaiting_publish";
+  ui.rejectButton.disabled = record.status !== "awaiting_publish";
   if (record.status === "verified") renderBlockchain(record);
+
+  if (record.status === "rejected") {
+    ui.rejectedRecord.hidden = false;
+    ui.matchStatus.textContent = "Match rejected";
+    ui.matchStatus.dataset.status = "failed";
+  }
 
   if (record.status === "failed") {
     ui.errorRecord.hidden = false;
@@ -425,6 +436,21 @@ ui.publishButton.addEventListener("click", async () => {
   }
 });
 
+ui.rejectButton.addEventListener("click", async () => {
+  if (!state.runId) return;
+  ui.rejectButton.disabled = true;
+  try {
+    const record = await fetchJson(`/api/runs/${encodeURIComponent(state.runId)}/reject`, {
+      method: "POST",
+    });
+    renderRecord(record);
+    showToast("Match rejected. Nothing was published.");
+  } catch (error) {
+    showToast(error.message);
+    ui.rejectButton.disabled = false;
+  }
+});
+
 ui.verifyButton.addEventListener("click", async () => {
   if (!state.runId) return;
   ui.verifyButton.disabled = true;
@@ -481,6 +507,7 @@ ui.createWallet.addEventListener("click", async () => {
 
 ui.refreshHealth.addEventListener("click", () => loadHealth());
 ui.retryButton.addEventListener("click", resetRun);
+ui.rejectedRetry.addEventListener("click", resetRun);
 
 window.addEventListener("beforeunload", () => {
   if (state.previewUrl) URL.revokeObjectURL(state.previewUrl);

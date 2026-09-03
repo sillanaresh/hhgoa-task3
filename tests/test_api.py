@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from faceproof.api import create_app
 from faceproof.blockchain import BlockchainStatus
 from faceproof.config import Settings
-from faceproof.domain import RunStatus
+from faceproof.domain import RunStatus, StepStatus
 from faceproof.store import RunStore
 
 
@@ -81,3 +81,25 @@ def test_unknown_runs_are_404_and_publication_cannot_be_canceled(settings: Setti
     assert cancellation.status_code == 400
     assert "cannot be canceled" in cancellation.json()["error"]["message"]
     assert store.get(record.run_id).status == RunStatus.PUBLISHING
+
+
+def test_reviewed_match_can_be_rejected_but_not_published(settings: Settings) -> None:
+    store = RunStore(settings.runs_dir)
+    record = store.create("face.jpg")
+    record.status = RunStatus.AWAITING_PUBLISH
+    store.save(record)
+    client = TestClient(create_app(settings))
+
+    rejected = client.post(f"/api/runs/{record.run_id}/reject")
+    publication = client.post(f"/api/runs/{record.run_id}/publish")
+
+    assert rejected.status_code == 200
+    assert rejected.json()["status"] == "rejected"
+    assert publication.status_code == 400
+    saved = store.get(record.run_id)
+    assert saved.status == RunStatus.REJECTED
+    assert all(
+        step.status == StepStatus.SKIPPED
+        for step in saved.steps
+        if step.key in {"publish", "verify"}
+    )

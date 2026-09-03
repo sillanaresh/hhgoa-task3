@@ -19,7 +19,7 @@ from starlette.responses import Response
 from faceproof import __version__
 from faceproof.blockchain import BaseSepoliaClient
 from faceproof.config import Settings, get_settings
-from faceproof.domain import HealthResponse, RunRecord, RunStatus
+from faceproof.domain import HealthResponse, RunRecord, RunStatus, StepStatus
 from faceproof.errors import FaceProofError, ImageValidationError
 from faceproof.pipeline import Pipeline
 from faceproof.store import RunStore
@@ -232,6 +232,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         remember(run_id, pipeline.publish_and_verify(run_id))
         await asyncio.sleep(0)
         return store.get(run_id)
+
+    @application.post("/api/runs/{run_id}/reject", response_model=RunRecord)
+    async def reject_run(run_id: str) -> RunRecord:
+        record = load_run(run_id)
+        if record.status != RunStatus.AWAITING_PUBLISH:
+            raise FaceProofError(
+                "Only a match awaiting review can be rejected.",
+                "Wait for comparison to finish or start a new run.",
+            )
+        record.status = RunStatus.REJECTED
+        record.current_step = None
+        record.status_message = "The proposed match was rejected. Nothing was published."
+        for step in record.steps:
+            if step.key in {"publish", "verify"}:
+                step.status = StepStatus.SKIPPED
+                step.detail = "Skipped because the proposed match was rejected."
+        store.save(record)
+        return record
 
     @application.post("/api/runs/{run_id}/verify", response_model=RunRecord)
     async def verify_run(run_id: str) -> RunRecord:

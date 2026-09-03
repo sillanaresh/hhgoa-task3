@@ -59,13 +59,15 @@ Every run has six ordered stages:
 | Publish | Sign and send one zero value Base Sepolia self transaction | Transaction hash, block, wallet addresses, public explorer URL |
 | Verify | Read the transaction and compare the exact expected bytes | Verification result, time, and confirmation count |
 
-States are `created`, `running`, `awaiting_publish`, `publishing`, `verified`, `failed`, and `canceled`. Each transition is written atomically to `state.json`. Partial search and comparison results remain available after a failure.
+States are `created`, `running`, `awaiting_publish`, `publishing`, `verified`, `rejected`, `failed`, and `canceled`. Each transition is written atomically to `state.json`. Partial search and comparison results remain available after a failure or rejection.
 
 ## Face processing
 
 YuNet locates faces and five facial landmarks. SFace aligns the selected face and returns a 128 value feature vector. The vector is normalized in memory. Candidate comparison uses the dot product of normalized vectors, which is cosine similarity.
 
-The default decision threshold is `0.363`, matching the cosine threshold published in the [official OpenCV Zoo SFace implementation](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/sface.py). It is a model decision boundary, not a probability and not a measure of legal identity. The largest face is selected when several faces appear. The run warns about that choice.
+Ordinary visual results must meet FaceProof's conservative `0.45` application threshold. A result returned by Google Lens in its exact-match section may use `0.363`, the cosine reference published in the [official OpenCV Zoo SFace implementation](https://github.com/opencv/opencv_zoo/blob/main/models/face_recognition_sface/sface.py). These are model decision boundaries, not probabilities or measures of legal identity. A passing result still waits for human approval or rejection. The largest face is selected when several faces appear, and the run warns about that choice.
+
+YuNet's detection cutoff is `0.80`. Detection only decides whether a usable face is present. It does not influence the SFace identity threshold.
 
 Model files come from the official OpenCV Zoo. Their URLs and SHA-256 values are pinned in source. A missing or changed download cannot be used silently.
 

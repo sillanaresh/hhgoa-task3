@@ -34,7 +34,7 @@ class FaceEngine:
     detector_name = YUNET.name
     recognizer_name = SFACE.name
 
-    def __init__(self, models_dir: Path, score_threshold: float = 0.88) -> None:
+    def __init__(self, models_dir: Path, score_threshold: float = 0.80) -> None:
         paths = ensure_models(models_dir)
         self.detector = cv2.FaceDetectorYN.create(
             str(paths[YUNET.filename]),
